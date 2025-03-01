@@ -1,7 +1,74 @@
-import React from 'react'
+"use client";
+import React from "react";
+import AuthContainer from "../_components/AuthContainer/AuthContainer";
+import { useForm } from "react-hook-form";
+import { TVerifyOtpSchema } from "../../(lib)/types";
+import { verifyOtpSchema } from "../../(lib)/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export default function VerifyOTPPage() {
+  const form = useForm<TVerifyOtpSchema>({
+    resolver: zodResolver(verifyOtpSchema),
+    defaultValues: {
+      otp: "",
+    },
+  });
+
+  const onSubmit = (values: TVerifyOtpSchema) => {
+    console.log(values);
+  };
   return (
-    <div>VerifyOTPPage</div>
-  )
+    <AuthContainer
+      title="Verify OTP"
+      subtitle="Enter the OTP sent to your email"
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="otp"
+            render={({ field }) => (
+              <div className="flex justify-center">
+                <FormItem>
+                  <FormControl>
+                    <InputOTP maxLength={6} {...field}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                      </InputOTPGroup>
+                      <InputOTPSeparator />
+                      <InputOTPGroup>
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              </div>
+            )}
+          />
+          <Button type="submit" className="w-full">
+            Verify
+          </Button>
+        </form>
+      </Form>
+    </AuthContainer>
+  );
 }
