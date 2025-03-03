@@ -1,9 +1,9 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import { useForm } from "react-hook-form";
 import { TVerifyOtpSchema } from "../../(lib)/types";
-import { verifyOtpSchema } from "../../(lib)/schemas";
+import { SVerifyOtp } from "../../(lib)/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -19,18 +19,37 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useAction } from "@/hooks/useAction";
+import { verifyOtpAction } from "../../(lib)/actions/verifyOtpAction";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function VerifyOTPPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { mutate, isLoading, data } = useAction(verifyOtpAction);
+
   const form = useForm<TVerifyOtpSchema>({
-    resolver: zodResolver(verifyOtpSchema),
+    resolver: zodResolver(SVerifyOtp),
     defaultValues: {
       otp: "",
     },
   });
 
-  const onSubmit = (values: TVerifyOtpSchema) => {
-    console.log(values);
+  const onSubmit = async (formData: TVerifyOtpSchema) => {
+    const email = searchParams.get("email");
+    await mutate({
+      otp: formData.otp,
+      email: email as string,
+    });
   };
+
+  useEffect(() => {
+    const redirect = searchParams.get("redirect");
+    if (redirect && data) {
+      router.push(redirect);
+    }
+  }, [data, router, searchParams]);
   return (
     <AuthContainer
       title="Verify OTP"
@@ -64,7 +83,7 @@ export default function VerifyOTPPage() {
               </div>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button type="submit" disabled={isLoading} className="w-full">
             Verify
           </Button>
         </form>

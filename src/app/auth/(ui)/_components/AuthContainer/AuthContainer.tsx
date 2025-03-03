@@ -8,9 +8,9 @@ export default function AuthContainer({
   subtitle,
 }: AuthContainerProps) {
   return (
-    <div className={cn("flex flex-col gap-6", className)}>
+    <div className={cn("mx-auto flex max-w-xs flex-col gap-6", className)}>
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-bold capitalize">{title}</h1>
         <p className="text-balance text-sm text-muted-foreground">{subtitle}</p>
       </div>
       {children}

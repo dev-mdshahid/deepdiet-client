@@ -3,7 +3,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { TForgotPasswordFormSchema } from "../../(lib)/types";
-import { forgotPasswordFormSchema } from "../../(lib)/schemas";
+import { SForgotPasswordForm } from "../../(lib)/schemas";
 import { Button } from "@/components/ui/button";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import {
@@ -15,18 +15,30 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAction } from "@/hooks/useAction";
+import { forgotPasswordAction } from "../../(lib)/actions/forgotPasswordAction";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+  const { mutate, isLoading, data } = useAction(forgotPasswordAction);
   const form = useForm<TForgotPasswordFormSchema>({
-    resolver: zodResolver(forgotPasswordFormSchema),
+    resolver: zodResolver(SForgotPasswordForm),
     defaultValues: {
       email: "",
     },
   });
 
-  const onSubmit = (values: TForgotPasswordFormSchema) => {
-    console.log(values);
+  const onSubmit = async (formData: TForgotPasswordFormSchema) => {
+    await mutate(formData);
+    if (data) {
+      localStorage.setItem("forgotPasswordData", JSON.stringify(formData));
+      router.push(
+        `/auth/verify-otp?email=${formData.email}&redirect=/auth/reset-password`,
+      );
+    }
   };
+
   return (
     <AuthContainer
       title="Forgot your password?"
@@ -53,7 +65,7 @@ export default function ForgotPasswordPage() {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" disabled={isLoading} className="w-full">
             Confirm your email
           </Button>
         </form>

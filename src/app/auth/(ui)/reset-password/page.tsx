@@ -3,7 +3,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { TResetPasswordFormSchema } from "../../(lib)/types";
-import { resetPasswordFormSchema } from "../../(lib)/schemas";
+import { SResetPasswordForm } from "../../(lib)/schemas";
 import { Button } from "@/components/ui/button";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import {
@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 
 export default function ResetPasswordPage() {
   const form = useForm<TResetPasswordFormSchema>({
-    resolver: zodResolver(resetPasswordFormSchema),
+    resolver: zodResolver(SResetPasswordForm),
     defaultValues: {
       password: "",
       confirmPassword: "",

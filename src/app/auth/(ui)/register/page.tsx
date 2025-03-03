@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -15,21 +15,45 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import Link from "next/link";
 import { TRegisterFormSchema } from "../../(lib)/types";
-import { registerFormSchema } from "../../(lib)/schemas";
+import { SRegisterForm } from "../../(lib)/schemas";
+import { useAction } from "@/hooks/useAction";
+import { registerAction } from "../../(lib)/actions/registerAction";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { mutate, isLoading, error, data } = useAction(registerAction);
+
+  // react hook form setup with zod
+  const previousData = JSON.parse(localStorage.getItem("registerData") || "{}");
   const form = useForm<TRegisterFormSchema>({
-    resolver: zodResolver(registerFormSchema),
+    resolver: zodResolver(SRegisterForm),
     defaultValues: {
-      email: "",
+      email: previousData.email || "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  const onSubmit = (data: TRegisterFormSchema) => {
-    console.log(data);
+  console.log(error);
+
+  const onSubmit = async (formData: TRegisterFormSchema) => {
+    await mutate(formData);
+    if (data) localStorage.setItem("registerData", JSON.stringify(formData));
   };
+
+  useEffect(() => {
+    if (data) {
+      const email = JSON.parse(
+        localStorage.getItem("registerData") || "{}",
+      ).email;
+      router.push(
+        `/auth/verify-otp?email=${email}&redirect=/auth/complete-registration`,
+      );
+    } else {
+      router.push("/auth/register");
+    }
+  }, [data, router]);
 
   return (
     <AuthContainer
@@ -88,7 +112,7 @@ export default function RegisterPage() {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" disabled={isLoading} className="w-full">
             Register
           </Button>
         </form>

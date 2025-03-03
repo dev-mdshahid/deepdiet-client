@@ -13,30 +13,33 @@ import Link from "next/link";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import { TLoginFormSchema } from "@/app/auth/(lib)/types";
 import { useForm } from "react-hook-form";
-import { loginFormSchema } from "../../(lib)/schemas";
+import { SLoginForm } from "../../(lib)/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginAction } from "../../(lib)/actions/loginAction";
+import { useAction } from "@/hooks/useAction";
 
 export default function LoginForm() {
+  const { mutate, isLoading, error, data } = useAction(loginAction);
   const form = useForm<TLoginFormSchema>({
-    resolver: zodResolver(loginFormSchema),
+    resolver: zodResolver(SLoginForm),
     defaultValues: {
       email: "",
       password: "",
     },
   });
-
-  // const onSubmit = async (values: TLoginFormSchema) => {
-  //   const result = await loginAction(values)
-  //   console.log(result);
-  // };
+  console.log("loading => ", isLoading);
+  console.log("error => ", error);
+  console.log("data => ", data);
+  const onSubmit = async (values: TLoginFormSchema) => {
+    await mutate(values);
+  };
   return (
     <AuthContainer
       title="Login to your account"
       subtitle="Enter your email below to login to your account"
     >
       <Form {...form}>
-        <form className="grid gap-6" action={loginAction}>
+        <form className="grid gap-6" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             name="email"
             render={({ field }) => (
@@ -76,7 +79,7 @@ export default function LoginForm() {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
             Login
           </Button>
         </form>
