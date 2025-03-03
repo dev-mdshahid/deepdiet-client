@@ -17,9 +17,14 @@ import { SLoginForm } from "../../(lib)/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginAction } from "../../(lib)/actions/loginAction";
 import { useAction } from "@/hooks/useAction";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginForm() {
-  const { mutate, isLoading, error, data } = useAction(loginAction);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+  const { mutate, isLoading } = useAction(loginAction);
   const form = useForm<TLoginFormSchema>({
     resolver: zodResolver(SLoginForm),
     defaultValues: {
@@ -27,12 +32,14 @@ export default function LoginForm() {
       password: "",
     },
   });
-  console.log("loading => ", isLoading);
-  console.log("error => ", error);
-  console.log("data => ", data);
+
   const onSubmit = async (values: TLoginFormSchema) => {
-    await mutate(values);
+    const result = await mutate(values);
+    if (result?.success) {
+      router.replace(redirect || "/");
+    }
   };
+
   return (
     <AuthContainer
       title="Login to your account"

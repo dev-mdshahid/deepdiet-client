@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Form,
   FormControl,
@@ -22,10 +22,12 @@ import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { mutate, isLoading, error, data } = useAction(registerAction);
+  const { mutate, isLoading } = useAction(registerAction);
 
   // react hook form setup with zod
-  const previousData = JSON.parse(localStorage.getItem("registerData") || "{}");
+  const previousData = JSON.parse(
+    sessionStorage.getItem("registerData") || "{}",
+  );
   const form = useForm<TRegisterFormSchema>({
     resolver: zodResolver(SRegisterForm),
     defaultValues: {
@@ -35,25 +37,15 @@ export default function RegisterPage() {
     },
   });
 
-  console.log(error);
-
   const onSubmit = async (formData: TRegisterFormSchema) => {
-    await mutate(formData);
-    if (data) localStorage.setItem("registerData", JSON.stringify(formData));
-  };
-
-  useEffect(() => {
-    if (data) {
-      const email = JSON.parse(
-        localStorage.getItem("registerData") || "{}",
-      ).email;
+    const result = await mutate(formData);
+    if (result?.success) {
+      sessionStorage.setItem("registerData", JSON.stringify(formData));
       router.push(
-        `/auth/verify-otp?email=${email}&redirect=/auth/complete-registration`,
+        `/auth/verify-otp?email=${formData.email}&redirect=/auth/complete-registration`,
       );
-    } else {
-      router.push("/auth/register");
     }
-  }, [data, router]);
+  };
 
   return (
     <AuthContainer

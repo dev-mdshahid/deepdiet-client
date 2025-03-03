@@ -15,8 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAction } from "@/hooks/useAction";
+import { useRouter } from "next/navigation";
+import { resetPasswordAction } from "../../(lib)/actions/resetPasswordAction";
 
 export default function ResetPasswordPage() {
+  const { isLoading, mutate } = useAction(resetPasswordAction);
+  const router = useRouter();
   const form = useForm<TResetPasswordFormSchema>({
     resolver: zodResolver(SResetPasswordForm),
     defaultValues: {
@@ -25,9 +30,22 @@ export default function ResetPasswordPage() {
     },
   });
 
-  const onSubmit = (values: TResetPasswordFormSchema) => {
-    console.log(values);
+  const onSubmit = async (formData: TResetPasswordFormSchema) => {
+    const localData = JSON.parse(
+      sessionStorage.getItem("forgotPasswordData") || "{}",
+    );
+    const finalData = {
+      email: localData.email,
+      password: formData.password,
+    };
+    const result = await mutate(finalData);
+
+    if (result?.success) {
+      sessionStorage.removeItem("forgotPasswordData");
+      router.push("/auth/login");
+    }
   };
+
   return (
     <AuthContainer
       title="Reset your password!"
@@ -65,8 +83,8 @@ export default function ResetPasswordPage() {
             )}
           />
 
-          <Button type="submit" className="w-full">
-            Submit
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? "Submitting..." : "Submit"}
           </Button>
         </form>
       </Form>

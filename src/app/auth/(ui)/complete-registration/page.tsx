@@ -1,5 +1,4 @@
 "use client";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -31,10 +30,10 @@ import { completeRegistrationAction } from "../../(lib)/actions/completeRegistra
 
 export default function CompleteRegistrationForm() {
   const router = useRouter();
-  const { mutate, isLoading, data } = useAction(completeRegistrationAction);
+  const { mutate, isLoading } = useAction(completeRegistrationAction);
 
   const dataFromLocal = JSON.parse(
-    localStorage.getItem("completeRegistrationData") || "{}",
+    sessionStorage.getItem("completeRegistrationData") || "{}",
   );
 
   const form = useForm<TCompleteRegistrationFormSchema>({
@@ -51,17 +50,18 @@ export default function CompleteRegistrationForm() {
       agreeWithTerms: false,
     },
   });
-  //   console.log("loading => ", isLoading);
-  //   console.log("error => ", error);
-  //   console.log("data => ", data);
+
   const onSubmit = async (formData: TCompleteRegistrationFormSchema) => {
-    localStorage.setItem("completeRegistrationData", JSON.stringify(formData));
+    sessionStorage.setItem(
+      "completeRegistrationData",
+      JSON.stringify(formData),
+    );
     const registerFormData = JSON.parse(
-      localStorage.getItem("registerData") || "{}",
+      sessionStorage.getItem("registerData") || "{}",
     );
     if (!registerFormData.email) {
       toast.error("Please provide your email & password again!");
-      router.push("/auth/register");
+      return router.push("/auth/register");
     }
 
     const finalData = {
@@ -80,16 +80,13 @@ export default function CompleteRegistrationForm() {
       },
     };
 
-    await mutate(finalData);
-    // console.log(finalData);
-  };
-
-  useEffect(() => {
-    if (data) {
-      localStorage.clear();
+    const result = await mutate(finalData);
+    if (result?.success) {
+      sessionStorage.removeItem("registerData");
       router.push("/auth/login");
     }
-  }, [data, router]);
+  };
+
   return (
     <AuthContainer
       title="Just one more step..."

@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const { mutate, isLoading, data } = useAction(forgotPasswordAction);
+  const { mutate, isLoading } = useAction(forgotPasswordAction);
   const form = useForm<TForgotPasswordFormSchema>({
     resolver: zodResolver(SForgotPasswordForm),
     defaultValues: {
@@ -30,9 +30,9 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (formData: TForgotPasswordFormSchema) => {
-    await mutate(formData);
-    if (data) {
-      localStorage.setItem("forgotPasswordData", JSON.stringify(formData));
+    const result = await mutate(formData);
+    if (result?.success) {
+      sessionStorage.setItem("forgotPasswordData", JSON.stringify(formData));
       router.push(
         `/auth/verify-otp?email=${formData.email}&redirect=/auth/reset-password`,
       );

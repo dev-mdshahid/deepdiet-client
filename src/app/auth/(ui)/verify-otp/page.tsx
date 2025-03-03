@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import AuthContainer from "../_components/AuthContainer/AuthContainer";
 import { useForm } from "react-hook-form";
 import { TVerifyOtpSchema } from "../../(lib)/types";
@@ -27,7 +27,7 @@ import { useRouter } from "next/navigation";
 export default function VerifyOTPPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { mutate, isLoading, data } = useAction(verifyOtpAction);
+  const { mutate, isLoading } = useAction(verifyOtpAction);
 
   const form = useForm<TVerifyOtpSchema>({
     resolver: zodResolver(SVerifyOtp),
@@ -38,18 +38,17 @@ export default function VerifyOTPPage() {
 
   const onSubmit = async (formData: TVerifyOtpSchema) => {
     const email = searchParams.get("email");
-    await mutate({
+    const result = await mutate({
       otp: formData.otp,
       email: email as string,
     });
-  };
-
-  useEffect(() => {
     const redirect = searchParams.get("redirect");
-    if (redirect && data) {
+
+    if (redirect && result?.success) {
       router.push(redirect);
     }
-  }, [data, router, searchParams]);
+  };
+
   return (
     <AuthContainer
       title="Verify OTP"
